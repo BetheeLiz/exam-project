@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stopwatch</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              mono: ['"Digital Numbers"', 'monospace'],
+              sans: ['Inter', 'sans-serif'],
+            },
+          },
+        },
+      };
+    </script>
+    <!-- Font Awesome CSS CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap');
+      @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&display=swap');
+      
+      body {
+          font-family: 'Inter', sans-serif;
+      }
+      .digital-font {
+          font-family: 'Orbitron', sans-serif;
+          letter-spacing: 2px;
+      }
+      
+      /* Custom background colors for light and dark modes */
+      body.light {
+        background: linear-gradient(to right, #20e2d7, #f7d46c, #f1a7d6);
+      }
+      body.dark {
+        background: #111827;
+      }
+      .card-light {
+        background-color: #e0f2fe; /* light blue */
+      }
+      .card-dark {
+        background-color: #1f2937; /* dark gray */
+      }
+      .text-dark-blue {
+          color: #1a237e; /* A dark blue color for better contrast */
+      }
+    </style>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 flex flex-col items-center justify-center min-h-screen text-gray-900 dark:text-white transition-colors duration-500">
+    
+    <!-- Theme toggle button -->
+    <div class="absolute top-4 right-4">
+        <button id="theme-toggle" class="p-2 rounded-full bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500">
+            <i id="sun-icon" class="fa-solid fa-sun w-6 h-6"></i>
+            <i id="moon-icon" class="fa-solid fa-moon w-6 h-6 hidden"></i>
+        </button>
+    </div>
+
+    <!-- Tip container with lightbulb icon -->
+    <div class="absolute top-4 left-4 flex items-center space-x-2">
+      <button id="tip-toggle" class="p-2 rounded-full text-yellow-500 hover:text-yellow-600 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-yellow-400">
+        <i class="fa-solid fa-lightbulb w-6 h-6"></i>
+      </button>
+      <div id="tip-box" class="hidden bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-4 py-2 rounded-lg shadow-md transition-all duration-500 ease-in-out">
+        <p>Exercising everyday keeps the body healthy.</p>
+      </div>
+    </div>
+
+    <div id="stopwatch-card" class="p-8 rounded-2xl shadow-2xl w-full max-w-sm text-center transform transition-all duration-500 hover:scale-105 card-dark">
+        <h1 id="stopwatch-title" class="text-3xl font-bold mb-6 text-gray-800 dark:text-gray-100">Bethee's Stopwatch</h1>
+        
+        <!-- Timer Display -->
+        <div id="timer-display" class="digital-font text-5xl md:text-6xl font-semibold mb-6 text-white transition-colors duration-500">
+            <span id="hours">00</span>:<span id="minutes">00</span>:<span id="seconds">00</span>:<span id="milliseconds">00</span>
+        </div>
+        
+        <!-- Controls -->
+        <div class="flex justify-center space-x-4 mb-6">
+            <button id="start-btn" class="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-full shadow-lg transition-transform duration-300 hover:-translate-y-1 transform focus:outline-none focus:ring-4 focus:ring-green-400">Start</button>
+            <button id="stop-btn" class="bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-6 rounded-full shadow-lg transition-transform duration-300 hover:-translate-y-1 transform focus:outline-none focus:ring-4 focus:ring-red-400">Stop</button>
+            <button id="reset-btn" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-full shadow-lg transition-transform duration-300 hover:-translate-y-1 transform focus:outline-none focus:ring-4 focus:ring-gray-400">Reset</button>
+        </div>
+        
+        <!-- Bonus Challenge: Lap Button -->
+        <button id="lap-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-full shadow-lg transition-transform duration-300 hover:-translate-y-1 transform focus:outline-none focus:ring-4 focus:ring-blue-400 w-full mb-4">Lap</button>
+
+        <!-- Bonus Challenge: Lap Times Display -->
+        <div id="laps-container" class="mt-4 text-left border-t pt-4 border-gray-200 dark:border-gray-700">
+            <h3 id="laps-title" class="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-100">Lap Times</h3>
+            <ul id="laps-list" class="space-y-2"></ul>
+        </div>
+        
+    </div>
+
+    <script>
+        // DOM element references
+        const displayHours = document.getElementById('hours');
+        const displayMinutes = document.getElementById('minutes');
+        const displaySeconds = document.getElementById('seconds');
+        const displayMilliseconds = document.getElementById('milliseconds');
+        const startBtn = document.getElementById('start-btn');
+        const stopBtn = document.getElementById('stop-btn');
+        const resetBtn = document.getElementById('reset-btn');
+        const lapBtn = document.getElementById('lap-btn');
+        const lapsList = document.getElementById('laps-list');
+        const themeToggleBtn = document.getElementById('theme-toggle');
+        const sunIcon = document.getElementById('sun-icon');
+        const moonIcon = document.getElementById('moon-icon');
+        const stopwatchCard = document.getElementById('stopwatch-card');
+        const timerDisplay = document.getElementById('timer-display');
+        const stopwatchTitle = document.getElementById('stopwatch-title');
+        const lapsTitle = document.getElementById('laps-title');
+        
+        // New DOM element references for the tip feature
+        const tipToggleBtn = document.getElementById('tip-toggle');
+        const tipBox = document.getElementById('tip-box');
+
+        // State variables
+        let timer = null; // Stores the interval ID
+        let hours = 0;
+        let minutes = 0;
+        let seconds = 0;
+        let milliseconds = 0;
+
+        /**
+         * Pads a number with a leading zero if it's less than 10.
+         * @param {number} num - The number to format.
+         * @returns {string} The formatted number.
+         */
+        function formatTime(num) {
+            return num < 10 ? '0' + num : num;
+        }
+
+        /**
+         * Updates the timer display with the current time values.
+         */
+        function updateDisplay() {
+            displayHours.textContent = formatTime(hours);
+            displayMinutes.textContent = formatTime(minutes);
+            displaySeconds.textContent = formatTime(seconds);
+            displayMilliseconds.textContent = formatTime(milliseconds);
+        }
+
+        /**
+         * Increments the timer and updates the display.
+         */
+        function incrementTime() {
+            milliseconds++;
+            if (milliseconds === 100) {
+                milliseconds = 0;
+                seconds++;
+            }
+            if (seconds === 60) {
+                seconds = 0;
+                minutes++;
+            }
+            if (minutes === 60) {
+                minutes = 0;
+                hours++;
+            }
+            // Check for 20 minutes to automatically record a lap
+            if (minutes === 20 && seconds === 0 && milliseconds === 0) {
+                recordLap();
+            }
+            updateDisplay();
+        }
+
+        /**
+         * Starts the stopwatch timer.
+         */
+        function startTimer() {
+            // Prevent multiple timers from running
+            if (timer) return;
+            timer = setInterval(incrementTime, 10); // Update every 10 milliseconds
+            startBtn.disabled = true;
+            startBtn.classList.add('opacity-50');
+        }
+
+        /**
+         * Stops the stopwatch timer.
+         */
+        function stopTimer() {
+            clearInterval(timer);
+            timer = null;
+            startBtn.disabled = false;
+            startBtn.classList.remove('opacity-50');
+        }
+
+        /**
+         * Resets the stopwatch to 00:00:00.
+         */
+        function resetTimer() {
+            stopTimer(); // Ensure the timer is stopped
+            hours = 0;
+            minutes = 0;
+            seconds = 0;
+            milliseconds = 0;
+            updateDisplay();
+            lapsList.innerHTML = ''; // Clear lap times
+        }
+        
+        /**
+         * Records and displays a lap time.
+         */
+        function recordLap() {
+            // Only record laps if the timer is running and the lap limit has not been reached
+            if (!timer || lapsList.children.length >= 100) {
+              if (lapsList.children.length >= 100) {
+                console.log("Lap limit of 100 reached.");
+              }
+              return;
+            }
+            
+            const lapTime = `${formatTime(hours)}:${formatTime(minutes)}:${formatTime(seconds)}:${formatTime(milliseconds)}`;
+            const lapItem = document.createElement('li');
+            lapItem.textContent = lapTime;
+            
+            const lapNumber = lapsList.children.length + 1;
+            const bgClass = document.documentElement.classList.contains('dark') ? 'bg-gray-700' : 'bg-gray-200';
+            const textClass = document.documentElement.classList.contains('dark') ? 'text-gray-200' : 'text-gray-800';
+
+            lapItem.classList.add(bgClass, 'p-2', 'rounded-lg', 'shadow-md', 'flex', 'justify-between', 'items-center', 'transition-colors', 'duration-200', textClass);
+            
+            // Add lap number
+            const lapNumberSpan = document.createElement('span');
+            lapNumberSpan.textContent = `Lap ${lapNumber}`;
+            lapNumberSpan.classList.add('font-semibold');
+            
+            lapItem.prepend(lapNumberSpan);
+            
+            lapsList.appendChild(lapItem);
+        }
+
+        /**
+         * Toggles between light and dark themes.
+         */
+        function toggleTheme() {
+            const html = document.documentElement;
+            const body = document.body;
+            
+            if (html.classList.contains('dark')) {
+                // Switch to light mode
+                html.classList.remove('dark');
+                body.classList.remove('dark');
+                body.classList.add('light');
+                sunIcon.classList.remove('hidden');
+                moonIcon.classList.add('hidden');
+                stopwatchCard.classList.remove('card-dark');
+                stopwatchCard.classList.add('card-light');
+                timerDisplay.classList.remove('text-white');
+                timerDisplay.classList.add('text-dark-blue');
+                stopwatchTitle.classList.remove('dark:text-gray-100');
+                stopwatchTitle.classList.add('text-dark-blue');
+                lapsTitle.classList.remove('dark:text-gray-100');
+                lapsTitle.classList.add('text-dark-blue');
+            } else {
+                // Switch to dark mode
+                html.classList.add('dark');
+                body.classList.remove('light');
+                body.classList.add('dark');
+                sunIcon.classList.add('hidden');
+                moonIcon.classList.remove('hidden');
+                stopwatchCard.classList.remove('card-light');
+                stopwatchCard.classList.add('card-dark');
+                timerDisplay.classList.remove('text-dark-blue');
+                timerDisplay.classList.add('text-white');
+                stopwatchTitle.classList.remove('text-dark-blue');
+                stopwatchTitle.classList.add('dark:text-gray-100');
+                lapsTitle.classList.remove('text-dark-blue');
+                lapsTitle.classList.add('dark:text-gray-100');
+            }
+        }
+
+        /**
+         * Toggles the visibility of the tip box.
+         */
+        function toggleTip() {
+            tipBox.classList.toggle('hidden');
+        }
+        
+        // Event listeners for button clicks
+        startBtn.addEventListener('click', startTimer);
+        stopBtn.addEventListener('click', stopTimer);
+        resetBtn.addEventListener('click', resetTimer);
+        lapBtn.addEventListener('click', recordLap);
+        themeToggleBtn.addEventListener('click', toggleTheme);
+        tipToggleBtn.addEventListener('click', toggleTip);
+
+    </script>
+</body>
+</html>
