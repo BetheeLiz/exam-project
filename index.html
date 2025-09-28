@@ -38,13 +38,20 @@
         }
         
         /* Dynamic text colors for light and dark modes */
-        h1, .display, .laps h3 {
-            color: black;
+        h1, .display, .laps h3, .lap-item {
+            color: black; /* Default to black for light theme */
             transition: color 0.5s ease;
         }
         
-        body.dark-theme h1, body.dark-theme .display, body.dark-theme .laps h3 {
-            color: white;
+        body.dark-theme h1, body.dark-theme .display, body.dark-theme .laps h3, body.dark-theme .lap-item {
+            color: white; /* Change to white for dark theme */
+        }
+
+        /* Style for the stopwatch icon in the title */
+        .stopwatch-icon {
+            font-size: 1.2em; 
+            margin-right: 8px;
+            vertical-align: middle;
         }
         
         h1 {
@@ -63,6 +70,9 @@
             letter-spacing: 3px;
             box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3);
             font-variant-numeric: tabular-nums;
+            /* Ensures numbers stay on one line for better aesthetics */
+            white-space: nowrap; 
+            overflow: hidden;
         }
         
         .controls {
@@ -138,11 +148,14 @@
         
         .lap-item {
             padding: 8px 15px;
-            border-bottom: 1px solid rgba(180, 170, 170, 0.747);
-            color: white;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1); /* Lighter border for light mode */
             display: flex;
             justify-content: space-between;
             font-size: 0.9rem;
+        }
+
+        body.dark-theme .lap-item {
+             border-bottom: 1px solid rgba(180, 170, 170, 0.747); /* Original border for dark mode */
         }
         
         .lap-item:last-child {
@@ -155,7 +168,7 @@
         
         .theme-icon {
             margin-right: 5px;
-            font-size: 1.5rem; /* Increased icon size */
+            font-size: 1.5rem; 
         }
         
         .tip-container {
@@ -205,7 +218,7 @@
         /* Responsive adjustments */
         @media (max-width: 480px) {
             .display {
-                font-size: 3rem;
+                font-size: 2.5rem; /* Reduced font size for small screens */
                 padding: 20px 10px;
             }
             
@@ -232,7 +245,7 @@
     </div>
 
     <div class="container">
-        <h1>Bethee's Stopwatch</h1>
+        <h1><span class="stopwatch-icon">⏱️</span> Bethee's Stopwatch</h1>
         
         <div class="display" id="display">00:00:00.000</div>
         
@@ -294,6 +307,16 @@
         function updateDisplay() {
             const currentTime = isRunning ? Date.now() - startTime + elapsedTime : elapsedTime;
             display.textContent = formatTime(currentTime);
+
+            // Automatic 20-minute lap feature
+            const twentyMinutesInMs = 20 * 60 * 1000;
+            const lastLapTime = lapCount > 0 ? Array.from(lapTimes.children)[0].getAttribute('data-time') : 0;
+            
+            if (isRunning && (currentTime - lastLapTime) >= twentyMinutesInMs) {
+                // Record the lap and set the current time as the "previous" lap time
+                recordLap(currentTime);
+                // Note: The next lap will be recorded 20 minutes from the time of this automatic lap.
+            }
         }
 
         // Start the stopwatch
@@ -329,15 +352,20 @@
             stopBtn.disabled = true;
         }
 
-        // Record a lap time
-        function recordLap() {
-            if (isRunning) {
+        // Record a lap time (accepts an optional currentTimeMs for automatic laps)
+        function recordLap(currentTimeMs = null) {
+            if (lapCount >= 100) {
+                console.log("Lap limit (/100) reached. Cannot record more laps.");
+                return;
+            }
+            if (isRunning || currentTimeMs !== null) {
                 lapCount++;
-                const currentTime = Date.now() - startTime + elapsedTime;
-                const lapTime = formatTime(currentTime);
+                const timeToRecord = currentTimeMs !== null ? currentTimeMs : Date.now() - startTime + elapsedTime;
+                const lapTime = formatTime(timeToRecord);
                 
                 const lapItem = document.createElement('div');
                 lapItem.className = 'lap-item';
+                lapItem.setAttribute('data-time', timeToRecord); // Store ms for comparison
                 lapItem.innerHTML = `
                     <span class="lap-number">Lap ${lapCount}</span>
                     <span class="lap-time">${lapTime}</span>
@@ -367,7 +395,8 @@
         startBtn.addEventListener('click', start);
         stopBtn.addEventListener('click', stop);
         resetBtn.addEventListener('click', reset);
-        lapBtn.addEventListener('click', recordLap);
+        // Ensure manual lap doesn't accidentally trigger automatic lap logic
+        lapBtn.addEventListener('click', () => recordLap(null)); 
         themeToggle.addEventListener('click', toggleTheme);
         tipToggle.addEventListener('click', toggleTip);
 
