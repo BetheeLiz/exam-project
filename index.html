@@ -12,6 +12,7 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
         
+        /* Default (Light) Theme Background */
         body {
             display: flex;
             justify-content: center;
@@ -21,8 +22,19 @@
             transition: background 0.5s ease;
         }
         
+        /* Dark Theme Background */
         body.dark-theme {
             background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+        }
+        
+        /* Dynamic Text Color (Black in Light, White in Dark) */
+        h1, .display, .laps h3, .lap-item {
+            color: black; /* Default (Light Mode) */
+            transition: color 0.5s ease;
+        }
+        
+        body.dark-theme h1, body.dark-theme .display, body.dark-theme .laps h3, body.dark-theme .lap-item {
+            color: white; /* Dark Mode */
         }
         
         .container {
@@ -37,26 +49,16 @@
             border: 1px solid rgba(255, 255, 255, 0.2);
         }
         
-        /* Dynamic text colors for light and dark modes */
-        h1, .display, .laps h3, .lap-item {
-            color: black; /* Default to black for light theme */
-            transition: color 0.5s ease;
-        }
-        
-        body.dark-theme h1, body.dark-theme .display, body.dark-theme .laps h3, body.dark-theme .lap-item {
-            color: white; /* Change to white for dark theme */
-        }
-
-        /* Style for the stopwatch icon in the title */
+        /* Stopwatch Icon Styling */
         .stopwatch-icon {
             font-size: 1.2em; 
             margin-right: 8px;
             vertical-align: middle;
         }
-        
+
         h1 {
             margin-bottom: 20px;
-            font-weight: 300;
+            font-weight: 600; /* Made slightly bolder for emphasis */
             letter-spacing: 1px;
         }
         
@@ -70,15 +72,17 @@
             letter-spacing: 3px;
             box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3);
             font-variant-numeric: tabular-nums;
-            /* Ensures numbers stay on one line for better aesthetics */
+            /* Ensure the digits don't wrap and stay on one line */
             white-space: nowrap; 
             overflow: hidden;
+            display: block; 
         }
         
+        /* Updated Button Layout: space-between for even spreading */
         .controls {
             display: flex;
-            justify-content: center;
-            gap: 15px;
+            justify-content: space-between; /* Align buttons with the edges of the container */
+            gap: 10px; /* Reduced gap slightly */
             margin-bottom: 25px;
             flex-wrap: wrap;
         }
@@ -125,10 +129,18 @@
             color: white;
         }
         
+        /* Theme Toggle Container Styling (Top Right Position) */
+        .theme-container {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 10;
+        }
+
         #themeToggle {
             background: #85441a;
-            color: rgb(23, 31, 48);
-            margin-top: 10px;
+            color: white; /* Ensures good contrast on the toggle button */
+            margin-top: 0; /* Removed previous margin */
         }
         
         .laps {
@@ -146,18 +158,20 @@
             text-align: center;
         }
         
+        /* Light mode lap item border */
         .lap-item {
             padding: 8px 15px;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.1); /* Lighter border for light mode */
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1); 
             display: flex;
             justify-content: space-between;
             font-size: 0.9rem;
         }
-
-        body.dark-theme .lap-item {
-             border-bottom: 1px solid rgba(180, 170, 170, 0.747); /* Original border for dark mode */
-        }
         
+        /* Dark mode lap item border */
+        body.dark-theme .lap-item {
+             border-bottom: 1px solid rgba(180, 170, 170, 0.747); 
+        }
+
         .lap-item:last-child {
             border-bottom: none;
         }
@@ -166,11 +180,7 @@
             font-weight: 600;
         }
         
-        .theme-icon {
-            margin-right: 5px;
-            font-size: 1.5rem; 
-        }
-        
+        /* Tip Button and Box Styling */
         .tip-container {
             position: absolute;
             top: 20px;
@@ -187,10 +197,13 @@
             box-shadow: none;
             padding: 0;
             min-width: unset;
+            /* Make the emoji bigger */
+            font-size: 1.5rem; 
+            transition: transform 0.3s ease;
         }
 
         #tipToggle:hover {
-            transform: none;
+            transform: scale(1.1);
             box-shadow: none;
         }
 
@@ -199,7 +212,7 @@
             backdrop-filter: blur(5px);
             padding: 10px 15px;
             border-radius: 15px;
-            color: black;
+            color: black; /* Light mode text color */
             font-size: 0.9rem;
             opacity: 0;
             visibility: hidden;
@@ -207,7 +220,7 @@
         }
         
         body.dark-theme .tip-box {
-            color: white;
+            color: white; /* Dark mode text color */
         }
 
         .tip-box.visible {
@@ -215,10 +228,10 @@
             visibility: visible;
         }
         
-        /* Responsive adjustments */
+        /* Responsive Fix for Small Screens */
         @media (max-width: 480px) {
             .display {
-                font-size: 2.5rem; /* Reduced font size for small screens */
+                font-size: 2.5rem; /* Reduced font size to prevent overflow */
                 padding: 20px 10px;
             }
             
@@ -230,6 +243,7 @@
             
             .controls {
                 gap: 10px;
+                justify-content: space-around; /* Use space-around when buttons might wrap on very small screens */
             }
         }
     </style>
@@ -237,11 +251,18 @@
 <body>
     <div class="tip-container">
         <button id="tipToggle">
-            <span class="theme-icon">🤔</span>
+            <span>🤔</span>
         </button>
         <div id="tipBox" class="tip-box">
             <p>Exercising often keeps the body healthy.</p>
         </div>
+    </div>
+    
+    <!-- New Theme Toggle Container in the Top Right -->
+    <div class="theme-container">
+        <button id="themeToggle">
+            <span class="theme-icon">🌙</span> Dark Mode
+        </button>
     </div>
 
     <div class="container">
@@ -256,9 +277,7 @@
             <button id="lapBtn">Lap</button>
         </div>
         
-        <button id="themeToggle">
-            <span class="theme-icon">🌙</span> Dark Mode
-        </button>
+        <!-- Theme Toggle removed from here -->
         
         <div class="laps">
             <h3>Lap Times</h3>
@@ -283,8 +302,6 @@
         const themeToggle = document.getElementById('themeToggle');
         const lapTimes = document.getElementById('lapTimes');
         const body = document.body;
-
-        // New DOM elements for tip functionality
         const tipToggle = document.getElementById('tipToggle');
         const tipBox = document.getElementById('tipBox');
 
@@ -305,17 +322,19 @@
 
         // Update the display with current time
         function updateDisplay() {
+            // Calculate current time based on whether the timer is running or stopped
             const currentTime = isRunning ? Date.now() - startTime + elapsedTime : elapsedTime;
             display.textContent = formatTime(currentTime);
 
-            // Automatic 20-minute lap feature
+            // Automatic 20-minute lap feature:
             const twentyMinutesInMs = 20 * 60 * 1000;
-            const lastLapTime = lapCount > 0 ? Array.from(lapTimes.children)[0].getAttribute('data-time') : 0;
+            const lastLapItem = lapTimes.querySelector('.lap-item');
+            // Get the time of the most recent lap, or 0 if no laps exist
+            const lastLapTime = lastLapItem ? parseFloat(lastLapItem.getAttribute('data-time')) : 0;
             
+            // If running and 20 minutes have passed since the last lap (or since start if first lap)
             if (isRunning && (currentTime - lastLapTime) >= twentyMinutesInMs) {
-                // Record the lap and set the current time as the "previous" lap time
                 recordLap(currentTime);
-                // Note: The next lap will be recorded 20 minutes from the time of this automatic lap.
             }
         }
 
@@ -352,8 +371,9 @@
             stopBtn.disabled = true;
         }
 
-        // Record a lap time (accepts an optional currentTimeMs for automatic laps)
+        // Record a lap time
         function recordLap(currentTimeMs = null) {
+            // Check for lap limit
             if (lapCount >= 100) {
                 console.log("Lap limit (/100) reached. Cannot record more laps.");
                 return;
@@ -365,24 +385,25 @@
                 
                 const lapItem = document.createElement('div');
                 lapItem.className = 'lap-item';
-                lapItem.setAttribute('data-time', timeToRecord); // Store ms for comparison
+                // Store ms as a data attribute to support the 20-min auto-lap logic
+                lapItem.setAttribute('data-time', timeToRecord); 
                 lapItem.innerHTML = `
                     <span class="lap-number">Lap ${lapCount}</span>
                     <span class="lap-time">${lapTime}</span>
                 `;
                 
+                // Add new lap to the top of the list
                 lapTimes.prepend(lapItem);
             }
         }
 
         // Toggle between dark and light themes
         function toggleTheme() {
-            if (body.classList.contains('dark-theme')) {
-                body.classList.remove('dark-theme');
-                themeToggle.innerHTML = '<span class="theme-icon">🌙</span> Dark Mode';
+            const isDarkTheme = body.classList.toggle('dark-theme');
+            if (isDarkTheme) {
+                themeToggle.innerHTML = '<span>☀️</span> Light Mode';
             } else {
-                body.classList.add('dark-theme');
-                themeToggle.innerHTML = '<span class="theme-icon">☀️</span> Light Mode';
+                themeToggle.innerHTML = '<span>🌙</span> Dark Mode';
             }
         }
         
@@ -395,7 +416,7 @@
         startBtn.addEventListener('click', start);
         stopBtn.addEventListener('click', stop);
         resetBtn.addEventListener('click', reset);
-        // Ensure manual lap doesn't accidentally trigger automatic lap logic
+        // Ensure manual lap uses current time and doesn't interfere with auto-lap logic
         lapBtn.addEventListener('click', () => recordLap(null)); 
         themeToggle.addEventListener('click', toggleTheme);
         tipToggle.addEventListener('click', toggleTip);
